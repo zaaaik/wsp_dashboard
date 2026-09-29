@@ -1,21 +1,35 @@
-# Bot Floribri
+# WhatsApp Bot Dashboard
 
-Bot de WhatsApp para Florería Floribri.
+Bot conversacional de WhatsApp con tres conectores intercambiables sobre una misma lógica de respuestas.
 
-## Estructura
+## Arquitectura
 
 ```
 src/
-  config.js            # Datos del negocio y catálogo
-  core/conversacion.js # Lógica de respuestas
-  core/keepalive.js    # Ping para mantener vivo el servicio (Render)
-  bots/baileys.js      # Bot vía WhatsApp Web (QR)          -> npm start
-  bots/meta-api.js     # Bot vía WhatsApp Cloud API (Meta)  -> npm run api
-  bots/twilio.js       # Bot vía Twilio                     -> npm run twilio
+  config.js              # Datos del negocio y catálogo (configurable)
+  core/
+    conversacion.js      # Lógica de conversación, independiente del canal
+    keepalive.js         # Ping periódico para hosting que duerme el servicio
+  bots/
+    baileys.js           # Conector WhatsApp Web (QR)        -> npm start
+    meta-api.js          # Conector WhatsApp Cloud API       -> npm run api
+    twilio.js            # Conector Twilio                   -> npm run twilio
 ```
 
-## Uso
+- **core**: recibe un mensaje y devuelve la respuesta; no conoce el canal.
+- **bots**: adaptadores que reciben mensajes del proveedor, llaman al core y envían la respuesta.
+- **config**: contenido del negocio, separado del código.
+
+## Requisitos
+
+- Node.js 18+
+
+## Puesta en marcha
 
 1. `npm install`
-2. Copia `.env.example` a `.env` y completa los valores.
-3. Ejecuta el bot que prefieras con uno de los comandos de arriba.
+2. Copia `.env.example` a `.env` y completa las variables.
+3. Ejecuta el conector elegido con el script correspondiente.
+
+## Notas
+
+- `.env` y `sesion/` (credenciales y sesión de WhatsApp) están en `.gitignore`; no se versionan.
