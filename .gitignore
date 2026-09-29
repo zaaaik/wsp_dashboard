@@ -1,3 +1,9 @@
 node_modules/
 sesion/
 .env
+
+dashboard/.venv/
+dashboard/db.sqlite3
+dashboard/staticfiles/
+__pycache__/
+*.pyc
