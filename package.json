@@ -1,0 +1,18 @@
+{
+  "name": "bot-floribri",
+  "version": "1.0.0",
+  "description": "Bot de WhatsApp para Florería Floribri",
+  "main": "src/bots/baileys.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/bots/baileys.js",
+    "api": "node src/bots/meta-api.js",
+    "twilio": "node src/bots/twilio.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.0",
+    "pino": "^9.0.0",
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
