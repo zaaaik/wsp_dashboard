@@ -139,3 +139,11 @@ TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_WHATSAPP_FROM = os.environ.get('TWILIO_WHATSAPP_FROM', '')
 # URL pública (https) para validar la firma tras el proxy de Railway
 PUBLIC_BASE_URL = os.environ.get('PUBLIC_BASE_URL', '')
+
+# Errores 500 con traceback en los logs de Railway
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'loggers': {'django.request': {'handlers': ['console'], 'level': 'ERROR'}},
+}
