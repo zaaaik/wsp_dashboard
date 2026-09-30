@@ -137,6 +137,7 @@ MAILERS = {
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_WHATSAPP_FROM = os.environ.get('TWILIO_WHATSAPP_FROM', '')
+TWILIO_TEMPLATE_PEDIDO_SID = os.environ.get('TWILIO_TEMPLATE_PEDIDO_SID', 'HX2a5d86fcad8ff50d708bfb92389a8e99')
 # URL pública (https) para validar la firma tras el proxy de Railway
 PUBLIC_BASE_URL = os.environ.get('PUBLIC_BASE_URL', '')
 

@@ -18,3 +18,23 @@ class WebhookTests(TestCase):
     def test_rechaza_firma_invalida(self):
         r = self.client.post('/webhook/twilio/', {'From': 'whatsapp:+56912345678'})
         self.assertEqual(r.status_code, 403)
+
+
+class EnviarPlantillaTests(TestCase):
+    def test_requiere_staff(self):
+        self.assertEqual(self.client.get('/plantilla/').status_code, 302)
+
+    def test_envia_y_guarda_mensaje_saliente(self):
+        from unittest.mock import MagicMock, patch
+
+        from django.contrib.auth.models import User
+        User.objects.create_user('agente', password='x', is_staff=True)
+        self.client.login(username='agente', password='x')
+        with patch('chats.twilio_client.Client') as Cliente:
+            Cliente.return_value.messages.create.return_value = MagicMock(sid='SM99')
+            r = self.client.post('/plantilla/', {
+                'telefono': '+56912345678', 'nombre': 'Carlos', 'pedido': '#1024', 'fecha': '3 de octubre'})
+        self.assertContains(r, 'Plantilla enviada')
+        m = Mensaje.objects.get()
+        self.assertEqual((m.direccion, m.sid), ('out', 'SM99'))
+        self.assertIn('#1024', m.texto)
