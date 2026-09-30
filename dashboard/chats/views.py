@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse, HttpResponseForbidden
-from django.shortcuts import render
+from django.db.models import OuterRef, Subquery
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -9,7 +10,7 @@ from twilio.base.exceptions import TwilioRestException
 from twilio.request_validator import RequestValidator
 
 from .models import Contacto, Mensaje
-from .twilio_client import enviar_plantilla_pedido
+from .twilio_client import enviar_plantilla_pedido, enviar_texto
 
 
 @csrf_exempt
@@ -41,7 +42,7 @@ def webhook_twilio(request):
 
 @staff_member_required
 def enviar_plantilla(request):
-    contexto = {}
+    contexto = {'datos': {'telefono': request.GET.get('telefono', '')}}
     if request.method == 'POST':
         datos = {k: request.POST.get(k, '').strip() for k in ('telefono', 'nombre', 'pedido', 'fecha')}
         contexto['datos'] = datos
@@ -54,3 +55,48 @@ def enviar_plantilla(request):
             except TwilioRestException as e:
                 contexto['error'] = f'Twilio rechazó el envío: {e.msg}'
     return render(request, 'chats/enviar_plantilla.html', contexto)
+
+
+@staff_member_required
+def lista_chats(request):
+    return render(request, 'chats/lista.html')
+
+
+@staff_member_required
+def lista_parcial(request):
+    ultimo = Mensaje.objects.filter(contacto=OuterRef('pk')).order_by('-creado')
+    contactos = (
+        Contacto.objects
+        .annotate(ultima_fecha=Subquery(ultimo.values('creado')[:1]), ultimo_texto=Subquery(ultimo.values('texto')[:1]))
+        .filter(ultima_fecha__isnull=False)
+        .order_by('-ultima_fecha')
+    )
+    return render(request, 'chats/_lista.html', {'contactos': contactos})
+
+
+@staff_member_required
+def chat(request, pk):
+    contacto = get_object_or_404(Contacto, pk=pk)
+    return render(request, 'chats/chat.html', {'contacto': contacto, 'mensajes': contacto.mensajes.all()})
+
+
+@staff_member_required
+def chat_mensajes(request, pk):
+    contacto = get_object_or_404(Contacto, pk=pk)
+    return render(request, 'chats/_mensajes.html', {'contacto': contacto, 'mensajes': contacto.mensajes.all()})
+
+
+@staff_member_required
+@require_POST
+def chat_enviar(request, pk):
+    contacto = get_object_or_404(Contacto, pk=pk)
+    texto = request.POST.get('texto', '').strip()
+    error = ''
+    if texto and not contacto.ventana_abierta:
+        error = 'Pasaron más de 24 h desde el último mensaje del cliente: solo puedes enviar una plantilla.'
+    elif texto:
+        try:
+            enviar_texto(contacto, texto)
+        except TwilioRestException as e:
+            error = f'Twilio rechazó el envío: {e.msg}'
+    return render(request, 'chats/_mensajes.html', {'contacto': contacto, 'mensajes': contacto.mensajes.all(), 'error': error})

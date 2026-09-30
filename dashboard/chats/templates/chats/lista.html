@@ -1,0 +1,4 @@
+{% extends 'chats/base.html' %}
+{% block contenido %}
+<div hx-get="{% url 'lista_parcial' %}" hx-trigger="load, every 5s" hx-swap="innerHTML">Cargando…</div>
+{% endblock %}

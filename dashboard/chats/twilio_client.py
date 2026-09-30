@@ -23,3 +23,14 @@ def enviar_plantilla_pedido(telefono, nombre, pedido, fecha):
     return Mensaje.objects.create(
         contacto=contacto, direccion=Mensaje.Direccion.SALIENTE, texto=texto, sid=respuesta.sid,
     )
+
+
+def enviar_texto(contacto, texto):
+    """Respuesta libre; solo válida dentro de la ventana de 24 h."""
+    cliente = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    respuesta = cliente.messages.create(
+        from_=settings.TWILIO_WHATSAPP_FROM, to=f'whatsapp:{contacto.telefono}', body=texto,
+    )
+    return Mensaje.objects.create(
+        contacto=contacto, direccion=Mensaje.Direccion.SALIENTE, texto=texto, sid=respuesta.sid,
+    )

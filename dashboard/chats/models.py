@@ -1,4 +1,9 @@
+from datetime import timedelta
+
 from django.db import models
+from django.utils import timezone
+
+VENTANA = timedelta(hours=24)
 
 
 class Contacto(models.Model):
@@ -9,6 +14,20 @@ class Contacto(models.Model):
 
     def __str__(self):
         return self.nombre or self.telefono
+
+    @property
+    def ventana_cierra(self):
+        return self.ultimo_mensaje_entrante + VENTANA if self.ultimo_mensaje_entrante else None
+
+    @property
+    def ventana_restante(self):
+        if not self.ultimo_mensaje_entrante:
+            return timedelta(0)
+        return max(self.ultimo_mensaje_entrante + VENTANA - timezone.now(), timedelta(0))
+
+    @property
+    def ventana_abierta(self):
+        return self.ventana_restante > timedelta(0)
 
 
 class Mensaje(models.Model):

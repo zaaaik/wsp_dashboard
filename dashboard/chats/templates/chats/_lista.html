@@ -1,0 +1,9 @@
+{% for c in contactos %}
+  <a class="fila" href="{% url 'chat' c.pk %}">
+    <strong>{{ c }}</strong> <small>{{ c.telefono }} · {{ c.ultima_fecha|date:"d/m H:i" }}</small><br>
+    <small>{{ c.ultimo_texto|truncatechars:70 }}</small>
+    {% if not c.ventana_abierta %}<small> · ventana 24 h cerrada</small>{% endif %}
+  </a>
+{% empty %}
+  <p>Aún no hay conversaciones.</p>
+{% endfor %}
