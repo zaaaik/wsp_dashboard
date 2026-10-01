@@ -1,35 +1,64 @@
-# WhatsApp Bot Dashboard
+# Panel de atención por WhatsApp
 
-Bot conversacional de WhatsApp con tres conectores intercambiables sobre una misma lógica de respuestas.
+Aplicación web para gestionar conversaciones de WhatsApp a través de Twilio. Desarrollada con Django y PostgreSQL.
 
-## Arquitectura
+## Funciones
+
+- Recepción de mensajes mediante webhook de Twilio, con validación de firma.
+- Bandeja de conversaciones con filtros, historial, respuesta de agentes y notas internas.
+- Control de la ventana de 24 horas de WhatsApp.
+- Envío de plantillas aprobadas con botones de respuesta rápida.
+
+## Estructura
 
 ```
-src/
-  config.js              # Datos del negocio y catálogo (configurable)
-  core/
-    conversacion.js      # Lógica de conversación, independiente del canal
-    keepalive.js         # Ping periódico para hosting que duerme el servicio
-  bots/
-    baileys.js           # Conector WhatsApp Web (QR)        -> npm start
-    meta-api.js          # Conector WhatsApp Cloud API       -> npm run api
-    twilio.js            # Conector Twilio                   -> npm run twilio
+dashboard/
+  config/            # Configuración de Django
+  chats/
+    models.py        # Contacto y Mensaje
+    views.py         # Panel, webhook y envíos
+    twilio_client.py # Integración con la API de Twilio
+    templates/       # Interfaz (HTMX)
+  Procfile           # Comando de arranque en Railway
+  requirements.txt
 ```
 
-- **core**: recibe un mensaje y devuelve la respuesta; no conoce el canal.
-- **bots**: adaptadores que reciben mensajes del proveedor, llaman al core y envían la respuesta.
-- **config**: contenido del negocio, separado del código.
+## Desarrollo local
 
-## Requisitos
+```bash
+cd dashboard
+python -m venv .venv
+.venv/Scripts/activate
+pip install -r requirements.txt
+cp .env.example .env
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
 
-- Node.js 18+
+Pruebas:
 
-## Puesta en marcha
+```bash
+python manage.py test
+```
 
-1. `npm install`
-2. Copia `.env.example` a `.env` y completa las variables.
-3. Ejecuta el conector elegido con el script correspondiente.
+## Variables de entorno
 
-## Notas
+Se describen en `dashboard/.env.example`. Las principales:
 
-- `.env` y `sesion/` (credenciales y sesión de WhatsApp) están en `.gitignore`; no se versionan.
+| Variable | Descripción |
+|---|---|
+| `SECRET_KEY` | Clave secreta de Django |
+| `DEBUG` | `False` en producción |
+| `DATABASE_URL` | Conexión a PostgreSQL (SQLite si se omite) |
+| `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` | Dominio de la aplicación |
+| `PUBLIC_BASE_URL` | URL pública, usada para validar la firma de Twilio |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | Credenciales de Twilio |
+| `TWILIO_WHATSAPP_FROM` | Número remitente, formato `whatsapp:+...` |
+| `TWILIO_TEMPLATE_PEDIDO_SID` | Content SID de la plantilla de pedido |
+
+## Despliegue
+
+Railway, con directorio raíz `dashboard` y un servicio PostgreSQL asociado. El comando de arranque aplica migraciones, recopila archivos estáticos e inicia Gunicorn.
+
+Webhook de Twilio: `https://<dominio>/webhook/twilio/` (método POST).
