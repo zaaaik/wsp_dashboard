@@ -6,11 +6,11 @@
   .col { background: var(--card); border: 1px solid var(--line); border-radius: 16px; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   .lista { overflow-y: auto; }
   .tabs { display: flex; gap: 4px; padding: 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0; background: var(--card); }
-  .tabs a { font-size: 12px; font-weight: 500; padding: 5px 10px; border-radius: 14px; background: #f5eeea; color: var(--mut); text-decoration: none; }
+  .tabs a { font-size: 12px; font-weight: 500; padding: 5px 10px; border-radius: 14px; background: var(--sel); color: var(--mut); text-decoration: none; }
   .tabs a.on { background: var(--acc); color: #fff; font-weight: 700; }
   .conv { display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; }
-  .conv:hover { background: #fbf7f4; }
-  .conv.sel { background: var(--acc-soft); }
+  .conv:hover { background: var(--hover); }
+  .conv.sel { background: var(--sel); }
   .conv .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
   .conv .r { display: flex; justify-content: space-between; gap: 8px; }
   .conv .r small { color: var(--mut); }
@@ -26,9 +26,9 @@
   .aviso { margin: 10px 16px 0; padding: 7px 12px; border-radius: 10px; font-size: 13px; background: var(--warn-soft); color: var(--warn); }
   .aviso.ok { background: var(--ok-soft); color: var(--ok); }
   .error { color: #b00020; padding: 6px 16px 0; font-size: 13px; }
-  #mensajes { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 6px; background: #fdfaf8; }
-  .burbuja { max-width: 72%; padding: 8px 12px; border-radius: 14px 14px 14px 4px; background: #fff; border: 1px solid var(--line); white-space: pre-wrap; }
-  .burbuja.out { align-self: flex-end; background: var(--acc-soft); border-color: #ecd0d8; border-radius: 14px 14px 4px 14px; }
+  #mensajes { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 6px; background: #efeae2; }
+  .burbuja { max-width: 72%; padding: 8px 12px; border-radius: 8px 8px 8px 0; background: #fff; box-shadow: 0 1px 0.5px rgba(11,20,26,.13); white-space: pre-wrap; }
+  .burbuja.out { align-self: flex-end; background: var(--acc-soft); border-radius: 8px 8px 0 8px; }
   .burbuja small { display: block; color: var(--mut); font-size: 11px; text-align: right; margin-top: 2px; }
   form.enviar { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); align-items: flex-end; }
   form.enviar textarea { flex: 1; resize: none; padding: 9px 12px; border: 1px solid var(--line); border-radius: 12px; }
