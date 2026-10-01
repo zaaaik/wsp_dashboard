@@ -6,3 +6,4 @@ dashboard/db.sqlite3
 dashboard/staticfiles/
 __pycache__/
 *.pyc
+node_modules/
