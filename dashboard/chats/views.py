@@ -49,13 +49,13 @@ def enviar_plantilla(request):
         datos = {k: request.POST.get(k, '').strip() for k in ('telefono', 'nombre', 'pedido', 'fecha')}
         contexto['datos'] = datos
         if not all(datos.values()):
-            contexto['error'] = 'Completa todos los campos.'
+            contexto['error'] = 'Todos los campos son obligatorios.'
         else:
             try:
                 enviar_plantilla_pedido(**datos)
                 contexto['ok'] = f'Plantilla enviada a {datos["telefono"]}.'
             except TwilioRestException as e:
-                contexto['error'] = f'Twilio rechazó el envío: {e.msg}'
+                contexto['error'] = f'No se pudo enviar el mensaje: {e.msg}'
     return render(request, 'chats/enviar_plantilla.html', contexto)
 
 
@@ -139,12 +139,12 @@ def chat_enviar(request, pk):
     texto = request.POST.get('texto', '').strip()
     error = ''
     if texto and not contacto.ventana_abierta:
-        error = 'Pasaron más de 24 h desde el último mensaje del cliente: solo puedes enviar una plantilla.'
+        error = 'La ventana de 24 h está cerrada. Solo se admite el envío de plantillas.'
     elif texto:
         try:
             enviar_texto(contacto, texto)
         except TwilioRestException as e:
-            error = f'Twilio rechazó el envío: {e.msg}'
+            error = f'No se pudo enviar el mensaje: {e.msg}'
     return render(request, 'chats/_mensajes.html', {'contacto': contacto, 'mensajes': contacto.mensajes.all(), 'error': error})
 
 

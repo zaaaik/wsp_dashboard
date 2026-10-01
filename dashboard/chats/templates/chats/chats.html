@@ -54,7 +54,7 @@
 {% endblock %}
 {% block contenido %}
 <header class="sup">
-  <div><h1>Chats</h1><p>Responde a tus clientes de WhatsApp</p></div>
+  <div><h1>Chats</h1><p>Conversaciones de WhatsApp</p></div>
 </header>
 <div class="contenido">
   <div class="panel {% if contacto %}tiene-chat{% else %}sin-chat{% endif %}">
@@ -77,12 +77,12 @@
           </div>
           <form class="enviar" hx-post="{% url 'chat_enviar' contacto.pk %}" hx-target="#panel" hx-swap="innerHTML" hx-on::after-request="this.reset()">
             {% csrf_token %}
-            <textarea name="texto" rows="2" placeholder="Escribe tu respuesta…" required></textarea>
+            <textarea name="texto" rows="2" placeholder="Escribir respuesta" required></textarea>
             <button class="btn" type="submit">Enviar</button>
           </form>
         </div>
       {% else %}
-        <div class="vacio-chat"><h2>Elige una conversación</h2><p>Selecciona un chat de la lista para ver el historial y responder.</p></div>
+        <div class="vacio-chat"><h2>Sin conversación seleccionada</h2><p>Seleccione una conversación de la lista.</p></div>
       {% endif %}
     </div>
 
@@ -97,11 +97,11 @@
         <form hx-post="{% url 'chat_notas' contacto.pk %}" hx-target="#estado-notas" hx-swap="innerHTML">
           {% csrf_token %}
           <h2>Notas internas</h2>
-          <textarea name="notas" placeholder="Solo las ven los agentes">{{ contacto.notas }}</textarea>
+          <textarea name="notas" placeholder="Visibles solo para el equipo">{{ contacto.notas }}</textarea>
           <button class="btn sec" type="submit">Guardar</button><span id="estado-notas" class="guardado"></span>
         </form>
       {% else %}
-        <p class="vacio">La ficha del cliente aparece aquí.</p>
+        <p class="vacio">Sin cliente seleccionado.</p>
       {% endif %}
     </div>
   </div>

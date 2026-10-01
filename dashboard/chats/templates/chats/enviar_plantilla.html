@@ -18,7 +18,7 @@
   {% if error %}<p class="error">{{ error }}</p>{% endif %}
   <form method="post">
     {% csrf_token %}
-    <label>Teléfono (con +56…)<input name="telefono" value="{{ datos.telefono }}" placeholder="+56912345678" required></label>
+    <label>Teléfono (formato internacional)<input name="telefono" value="{{ datos.telefono }}" placeholder="+56912345678" required></label>
     <label>Nombre del cliente<input name="nombre" value="{{ datos.nombre }}" required></label>
     <label>N.º de pedido<input name="pedido" value="{{ datos.pedido }}" placeholder="#1024" required></label>
     <label>Fecha de entrega<input name="fecha" value="{{ datos.fecha }}" placeholder="3 de octubre" required></label>

@@ -1,7 +1,7 @@
 {% if contacto.ventana_abierta %}
-  <div class="aviso ok">Ventana abierta: puedes responder con texto libre durante {{ contacto.ventana_cierra|timeuntil }}.</div>
+  <div class="aviso ok">Ventana abierta. Tiempo restante: {{ contacto.ventana_cierra|timeuntil }}.</div>
 {% else %}
-  <div class="aviso">Ventana de 24 h cerrada. Solo puedes escribirle con una plantilla: <a href="{% url 'enviar_plantilla' %}?telefono={{ contacto.telefono|urlencode }}">enviar plantilla</a>.</div>
+  <div class="aviso">Ventana de 24 h cerrada. Solo se admite el envío de plantillas: <a href="{% url 'enviar_plantilla' %}?telefono={{ contacto.telefono|urlencode }}">Enviar plantilla</a>.</div>
 {% endif %}
 {% if error %}<div class="error">{{ error }}</div>{% endif %}
 <div id="mensajes">

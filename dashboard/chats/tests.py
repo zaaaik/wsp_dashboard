@@ -61,7 +61,7 @@ class ChatTests(TestCase):
         self.c.save()
         self._entra()
         r = self.client.post(f'/chat/{self.c.pk}/enviar/', {'texto': 'hola'})
-        self.assertContains(r, 'solo puedes enviar una plantilla')
+        self.assertContains(r, 'Solo se admite el envío de plantillas')
         self.assertEqual(Mensaje.objects.count(), 0)
 
     def test_ventana_abierta_envia_texto(self):
@@ -97,7 +97,7 @@ class PaginasTests(TestCase):
         self.assertContains(r, 'necesito ayuda')
 
     def test_chats_sin_seleccion_y_con_seleccion(self):
-        self.assertContains(self.client.get('/chats/'), 'Elige una conversación')
+        self.assertContains(self.client.get('/chats/'), 'Seleccione una conversación')
         r = self.client.get(f'/chat/{self.c.pk}/')
         self.assertContains(r, 'Notas internas')
         self.assertContains(r, 'AM')

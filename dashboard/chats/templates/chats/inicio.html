@@ -18,7 +18,7 @@
 <header class="sup">
   <div>
     <h1>{{ saludo }}, {{ nombre }}</h1>
-    <p>{{ ahora|date:"l j \d\e F" }} · Esto es lo que pasa hoy</p>
+    <p>{{ ahora|date:"l j \d\e F" }}</p>
   </div>
   <a class="btn" href="{% url 'enviar_plantilla' %}">Enviar plantilla</a>
 </header>
@@ -26,11 +26,11 @@
   <div class="metricas">
     <div class="tarjeta metrica"><small>Conversaciones hoy</small><div class="n">{{ conversaciones_hoy }}</div><span>Clientes con actividad hoy</span></div>
     <div class="tarjeta metrica"><small>Sin responder</small><div class="n">{{ sin_responder }}</div><span>El último mensaje es del cliente</span></div>
-    <div class="tarjeta metrica"><small>Ventanas de 24 h abiertas</small><div class="n">{{ ventanas_abiertas }}</div><span>Puedes responder con texto libre</span></div>
+    <div class="tarjeta metrica"><small>Ventanas de 24 h abiertas</small><div class="n">{{ ventanas_abiertas }}</div><span>Admiten respuesta de texto libre</span></div>
     <div class="tarjeta metrica"><small>Mensajes enviados hoy</small><div class="n">{{ enviados_hoy }}</div><span>Respuestas y plantillas</span></div>
   </div>
   <section class="tarjeta">
-    <div class="cab"><h2>Esperan una respuesta</h2><a href="{% url 'chats' %}">Ver todos</a></div>
+    <div class="cab"><h2>Pendientes de respuesta</h2><a href="{% url 'chats' %}">Ver todos</a></div>
     {% for c in recientes %}
       <a class="fila" href="{% url 'chat' c.pk %}">
         <div class="av">{{ c.iniciales }}</div>
@@ -38,7 +38,7 @@
         <div class="m">hace {{ c.ultima_fecha|timesince }}<br>{% if c.ventana_abierta %}<span class="chip ok">Ventana abierta</span>{% else %}<span class="chip warn">Solo plantilla</span>{% endif %}</div>
       </a>
     {% empty %}
-      <p class="vacio">No hay nadie esperando. Todo al día.</p>
+      <p class="vacio">Sin conversaciones pendientes.</p>
     {% endfor %}
   </section>
 </div>
