@@ -10,10 +10,18 @@ class Contacto(models.Model):
     telefono = models.CharField(max_length=32, unique=True)  # formato E.164, ej. +56912345678
     nombre = models.CharField(max_length=120, blank=True)
     ultimo_mensaje_entrante = models.DateTimeField(null=True, blank=True)  # base de la ventana de 24 h
+    notas = models.TextField(blank=True)  # notas internas, el cliente no las ve
     creado = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.nombre or self.telefono
+
+    @property
+    def iniciales(self):
+        palabras = self.nombre.split()
+        if palabras:
+            return ''.join(p[0] for p in palabras[:2]).upper()
+        return self.telefono[-2:]
 
     @property
     def ventana_cierra(self):

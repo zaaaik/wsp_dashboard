@@ -81,3 +81,32 @@ class ChatTests(TestCase):
         Mensaje.objects.create(contacto=self.c, direccion='in', texto='necesito ayuda')
         self._entra()
         self.assertContains(self.client.get('/chats/lista/'), 'necesito ayuda')
+
+
+class PaginasTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import User
+        User.objects.create_user('agente', password='x', is_staff=True)
+        self.c = Contacto.objects.create(nombre='Ana Muñoz', telefono='+56911111111')
+        Mensaje.objects.create(contacto=self.c, direccion='in', texto='necesito ayuda')
+        self.client.login(username='agente', password='x')
+
+    def test_inicio_muestra_metricas_y_pendientes(self):
+        r = self.client.get('/')
+        self.assertContains(r, 'Sin responder')
+        self.assertContains(r, 'necesito ayuda')
+
+    def test_chats_sin_seleccion_y_con_seleccion(self):
+        self.assertContains(self.client.get('/chats/'), 'Elige una conversación')
+        r = self.client.get(f'/chat/{self.c.pk}/')
+        self.assertContains(r, 'Notas internas')
+        self.assertContains(r, 'AM')
+
+    def test_filtros_de_lista(self):
+        self.assertContains(self.client.get('/chats/lista/?f=sin_responder'), 'Ana Muñoz')
+        self.assertNotContains(self.client.get('/chats/lista/?f=abiertas'), 'Ana Muñoz')
+
+    def test_guarda_notas(self):
+        self.client.post(f'/chat/{self.c.pk}/notas/', {'notas': 'Prefiere transferencia'})
+        self.c.refresh_from_db()
+        self.assertEqual(self.c.notas, 'Prefiere transferencia')

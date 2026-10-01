@@ -3,33 +3,75 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block titulo %}Chats{% endblock %}</title>
+  <title>{% block titulo %}Panel de atención{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@500;600&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 0; background: #f0f2f5; color: #111; }
-    header { background: #075e54; color: #fff; padding: .8rem 1rem; display: flex; gap: 1rem; align-items: center; }
-    header a { color: #fff; text-decoration: none; }
-    main { max-width: 720px; margin: 0 auto; padding: 1rem; }
-    .fila { display: block; background: #fff; padding: .8rem 1rem; border-bottom: 1px solid #eee; color: inherit; text-decoration: none; }
-    .fila small { color: #667; }
-    #mensajes { background: #efeae2; padding: 1rem; height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: .4rem; }
-    .burbuja { max-width: 75%; padding: .4rem .7rem; border-radius: 8px; background: #fff; white-space: pre-wrap; }
-    .burbuja.out { align-self: flex-end; background: #d9fdd3; }
-    .burbuja small { display: block; color: #667; font-size: .7rem; text-align: right; }
-    .aviso { padding: .6rem 1rem; margin-bottom: .5rem; border-radius: 6px; background: #fff3cd; }
-    .aviso.ok { background: #d1f2e0; }
-    .error { color: #b00020; padding: .3rem 0; }
-    form.enviar { display: flex; gap: .5rem; margin-top: .5rem; }
-    form.enviar textarea { flex: 1; padding: .5rem; font: inherit; }
-    button { padding: .5rem 1rem; }
+    :root {
+      --bg: #faf6f2; --card: #fff; --line: #eadfd9; --ink: #2b2226; --mut: #6b5a60;
+      --acc: #9e2f4f; --acc-hover: #7a2039; --acc-soft: #f6e6eb;
+      --ok: #1f7a54; --ok-soft: #e3f3ea; --warn: #8a5a00; --warn-soft: #fff1d6;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'DM Sans', system-ui, sans-serif; display: flex; min-height: 100vh; }
+    a { color: var(--acc); }
+    button, input, textarea { font: inherit; }
+    h1, h2 { margin: 0; }
+    h1 { font-family: Fraunces, serif; font-weight: 600; font-size: 28px; }
+    h2 { font-size: 15px; font-weight: 700; }
+
+    aside { width: 232px; flex: none; background: var(--card); border-right: 1px solid var(--line); padding: 24px 16px; display: flex; flex-direction: column; gap: 28px; position: sticky; top: 0; height: 100vh; }
+    .marca { display: flex; align-items: center; gap: 10px; padding: 0 6px; }
+    .marca .logo { width: 38px; height: 38px; border-radius: 12px; background: var(--acc); color: #fff; display: flex; align-items: center; justify-content: center; font-family: Fraunces, serif; font-size: 20px; }
+    .marca b { font-family: Fraunces, serif; font-size: 18px; display: block; }
+    .marca small { color: var(--mut); font-size: 12px; }
+    nav { display: flex; flex-direction: column; gap: 4px; }
+    nav a { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 14px; border-radius: 12px; color: var(--mut); text-decoration: none; font-weight: 500; }
+    nav a:hover { background: #f5eeea; color: var(--ink); }
+    nav a.on { background: var(--acc-soft); color: var(--acc); font-weight: 700; }
+    .pie { margin-top: auto; display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+    .estado { background: var(--ok-soft); color: var(--ok); border-radius: 12px; padding: 10px 12px; }
+    .estado b { display: block; }
+    .yo { display: flex; align-items: center; gap: 10px; }
+
+    .principal { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    header.sup { padding: 24px 32px 16px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+    header.sup p { margin: 4px 0 0; color: var(--mut); }
+    .contenido { padding: 0 32px 32px; flex: 1; min-height: 0; }
+
+    .av { width: 38px; height: 38px; border-radius: 50%; background: var(--acc-soft); color: var(--acc); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: none; }
+    .btn { display: inline-block; border: 0; border-radius: 10px; padding: 9px 16px; background: var(--acc); color: #fff; font-weight: 700; cursor: pointer; text-decoration: none; }
+    .btn:hover { background: var(--acc-hover); color: #fff; }
+    .btn.sec { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+    .btn.sec:hover { background: #f5eeea; color: var(--ink); }
+    .chip { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: var(--acc-soft); color: var(--acc); }
+    .chip.ok { background: var(--ok-soft); color: var(--ok); }
+    .chip.warn { background: var(--warn-soft); color: var(--warn); }
+    .tarjeta { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+
+    @media (max-width: 800px) {
+      aside { display: none; }
+      header.sup, .contenido { padding-left: 16px; padding-right: 16px; }
+    }
   </style>
+  {% block estilos %}{% endblock %}
 </head>
 <body>
-  <header>
-    <a href="{% url 'lista_chats' %}"><strong>Chats</strong></a>
-    <a href="{% url 'enviar_plantilla' %}">Enviar plantilla</a>
-    <a href="/admin/">Admin</a>
-  </header>
-  <main>{% block contenido %}{% endblock %}</main>
+  <aside>
+    <div class="marca"><div class="logo">P</div><div><b>Panel</b><small>Atención al cliente</small></div></div>
+    <nav aria-label="Secciones">
+      <a href="{% url 'inicio' %}" class="{% if request.resolver_match.url_name == 'inicio' %}on{% endif %}">Inicio</a>
+      <a href="{% url 'chats' %}" class="{% if request.resolver_match.url_name == 'chats' or request.resolver_match.url_name == 'chat' %}on{% endif %}">Chats</a>
+      <a href="{% url 'enviar_plantilla' %}" class="{% if request.resolver_match.url_name == 'enviar_plantilla' %}on{% endif %}">Enviar plantilla</a>
+      <a href="/admin/">Administración</a>
+    </nav>
+    <div class="pie">
+      <div class="estado"><b>WhatsApp conectado</b>vía Twilio</div>
+      <div class="yo"><div class="av">{{ request.user.get_username|slice:":2"|upper }}</div><div><b>{{ request.user.get_username }}</b></div></div>
+    </div>
+  </aside>
+  <div class="principal">{% block contenido %}{% endblock %}</div>
 </body>
 </html>

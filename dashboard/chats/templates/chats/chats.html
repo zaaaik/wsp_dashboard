@@ -1,0 +1,116 @@
+{% extends 'chats/base.html' %}
+{% block titulo %}Chats{% endblock %}
+{% block estilos %}
+<style>
+  .panel { display: grid; grid-template-columns: 320px minmax(0, 1fr) 280px; gap: 16px; height: calc(100vh - 124px); }
+  .col { background: var(--card); border: 1px solid var(--line); border-radius: 16px; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .lista { overflow-y: auto; }
+  .tabs { display: flex; gap: 4px; padding: 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0; background: var(--card); }
+  .tabs a { font-size: 12px; font-weight: 500; padding: 5px 10px; border-radius: 14px; background: #f5eeea; color: var(--mut); text-decoration: none; }
+  .tabs a.on { background: var(--acc); color: #fff; font-weight: 700; }
+  .conv { display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; }
+  .conv:hover { background: #fbf7f4; }
+  .conv.sel { background: var(--acc-soft); }
+  .conv .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .conv .r { display: flex; justify-content: space-between; gap: 8px; }
+  .conv .r small { color: var(--mut); }
+  .conv .t > span { color: var(--mut); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vacio { color: var(--mut); padding: 16px; margin: 0; }
+
+  .cab { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .cab .t { flex: 1; min-width: 0; }
+  .cab .t b { display: block; }
+  .cab .t small { color: var(--mut); }
+  .conversacion { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .aviso { margin: 10px 16px 0; padding: 7px 12px; border-radius: 10px; font-size: 13px; background: var(--warn-soft); color: var(--warn); }
+  .aviso.ok { background: var(--ok-soft); color: var(--ok); }
+  .error { color: #b00020; padding: 6px 16px 0; font-size: 13px; }
+  #mensajes { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 6px; background: #fdfaf8; }
+  .burbuja { max-width: 72%; padding: 8px 12px; border-radius: 14px 14px 14px 4px; background: #fff; border: 1px solid var(--line); white-space: pre-wrap; }
+  .burbuja.out { align-self: flex-end; background: var(--acc-soft); border-color: #ecd0d8; border-radius: 14px 14px 4px 14px; }
+  .burbuja small { display: block; color: var(--mut); font-size: 11px; text-align: right; margin-top: 2px; }
+  form.enviar { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); align-items: flex-end; }
+  form.enviar textarea { flex: 1; resize: none; padding: 9px 12px; border: 1px solid var(--line); border-radius: 12px; }
+  form.enviar textarea:focus { outline: 2px solid var(--acc-soft); border-color: var(--acc); }
+  .vacio-chat { margin: auto; text-align: center; color: var(--mut); padding: 24px; }
+
+  .ficha { padding: 18px; overflow-y: auto; gap: 18px; }
+  .ficha .id { text-align: center; }
+  .ficha .id .av { width: 64px; height: 64px; font-size: 20px; margin: 0 auto 8px; }
+  .ficha dl { margin: 0; display: grid; gap: 10px; }
+  .ficha dt { color: var(--mut); font-size: 12px; }
+  .ficha dd { margin: 0; font-weight: 500; }
+  .ficha textarea { width: 100%; min-height: 110px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; resize: vertical; margin: 8px 0; }
+  .guardado { color: var(--ok); font-size: 12px; margin-left: 8px; }
+
+  @media (max-width: 1100px) { .panel { grid-template-columns: 300px minmax(0, 1fr); } .ficha { display: none; } }
+  @media (max-width: 800px) {
+    .panel { grid-template-columns: 1fr; height: calc(100vh - 100px); }
+    .tiene-chat .col.lista { display: none; }
+    .sin-chat .col.conv-col { display: none; }
+  }
+</style>
+{% endblock %}
+{% block contenido %}
+<header class="sup">
+  <div><h1>Chats</h1><p>Responde a tus clientes de WhatsApp</p></div>
+</header>
+<div class="contenido">
+  <div class="panel {% if contacto %}tiene-chat{% else %}sin-chat{% endif %}">
+    <div class="col lista">
+      <div hx-get="{% url 'lista_parcial' %}?f={{ filtro }}&sel={{ seleccionado|default:'' }}" hx-trigger="every 5s" hx-swap="innerHTML">
+        {% include 'chats/_lista.html' %}
+      </div>
+    </div>
+
+    <div class="col conv-col">
+      {% if contacto %}
+        <div class="cab">
+          <div class="av">{{ contacto.iniciales }}</div>
+          <div class="t"><b>{{ contacto }}</b><small>{{ contacto.telefono }}</small></div>
+          <a class="btn sec" href="{% url 'enviar_plantilla' %}?telefono={{ contacto.telefono|urlencode }}">Enviar plantilla</a>
+        </div>
+        <div class="conversacion">
+          <div id="panel" hx-get="{% url 'chat_mensajes' contacto.pk %}" hx-trigger="every 3s" hx-swap="innerHTML">
+            {% include 'chats/_mensajes.html' %}
+          </div>
+          <form class="enviar" hx-post="{% url 'chat_enviar' contacto.pk %}" hx-target="#panel" hx-swap="innerHTML" hx-on::after-request="this.reset()">
+            {% csrf_token %}
+            <textarea name="texto" rows="2" placeholder="Escribe tu respuesta…" required></textarea>
+            <button class="btn" type="submit">Enviar</button>
+          </form>
+        </div>
+      {% else %}
+        <div class="vacio-chat"><h2>Elige una conversación</h2><p>Selecciona un chat de la lista para ver el historial y responder.</p></div>
+      {% endif %}
+    </div>
+
+    <div class="col ficha">
+      {% if contacto %}
+        <div class="id"><div class="av">{{ contacto.iniciales }}</div><b>{{ contacto }}</b><div style="color:var(--mut);font-size:13px">{{ contacto.telefono }}</div></div>
+        <dl>
+          <div><dt>Cliente desde</dt><dd>{{ contacto.creado|date:"j \d\e F \d\e Y" }}</dd></div>
+          <div><dt>Último mensaje del cliente</dt><dd>{% if contacto.ultimo_mensaje_entrante %}{{ contacto.ultimo_mensaje_entrante|date:"d/m H:i" }}{% else %}—{% endif %}</dd></div>
+          <div><dt>Ventana de 24 h</dt><dd>{% if contacto.ventana_abierta %}<span class="chip ok">Abierta</span>{% else %}<span class="chip warn">Cerrada</span>{% endif %}</dd></div>
+        </dl>
+        <form hx-post="{% url 'chat_notas' contacto.pk %}" hx-target="#estado-notas" hx-swap="innerHTML">
+          {% csrf_token %}
+          <h2>Notas internas</h2>
+          <textarea name="notas" placeholder="Solo las ven los agentes">{{ contacto.notas }}</textarea>
+          <button class="btn sec" type="submit">Guardar</button><span id="estado-notas" class="guardado"></span>
+        </form>
+      {% else %}
+        <p class="vacio">La ficha del cliente aparece aquí.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% if contacto %}
+<script>
+  const bajar = () => { const m = document.getElementById('mensajes'); if (m) m.scrollTop = m.scrollHeight; };
+  bajar();
+  document.body.addEventListener('htmx:afterSwap', (e) => { if (e.target.id === 'panel') bajar(); });
+</script>
+{% endif %}
+{% endblock %}

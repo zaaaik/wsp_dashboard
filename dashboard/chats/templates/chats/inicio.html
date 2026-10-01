@@ -1,0 +1,45 @@
+{% extends 'chats/base.html' %}
+{% block estilos %}
+<style>
+  .metricas { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .metrica small { color: var(--mut); display: block; }
+  .metrica .n { font-family: Fraunces, serif; font-size: 40px; font-weight: 600; line-height: 1.2; margin: 6px 0 2px; }
+  .metrica span { color: var(--mut); font-size: 13px; }
+  .cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .fila { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+  .fila .t { flex: 1; min-width: 0; }
+  .fila .t b { display: block; font-weight: 700; }
+  .fila .t span { color: var(--mut); font-size: 13px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fila .m { text-align: right; font-size: 12px; color: var(--mut); }
+  .vacio { color: var(--mut); padding: 12px 0; margin: 0; }
+</style>
+{% endblock %}
+{% block contenido %}
+<header class="sup">
+  <div>
+    <h1>{{ saludo }}, {{ nombre }}</h1>
+    <p>{{ ahora|date:"l j \d\e F" }} · Esto es lo que pasa hoy</p>
+  </div>
+  <a class="btn" href="{% url 'enviar_plantilla' %}">Enviar plantilla</a>
+</header>
+<div class="contenido">
+  <div class="metricas">
+    <div class="tarjeta metrica"><small>Conversaciones hoy</small><div class="n">{{ conversaciones_hoy }}</div><span>Clientes con actividad hoy</span></div>
+    <div class="tarjeta metrica"><small>Sin responder</small><div class="n">{{ sin_responder }}</div><span>El último mensaje es del cliente</span></div>
+    <div class="tarjeta metrica"><small>Ventanas de 24 h abiertas</small><div class="n">{{ ventanas_abiertas }}</div><span>Puedes responder con texto libre</span></div>
+    <div class="tarjeta metrica"><small>Mensajes enviados hoy</small><div class="n">{{ enviados_hoy }}</div><span>Respuestas y plantillas</span></div>
+  </div>
+  <section class="tarjeta">
+    <div class="cab"><h2>Esperan una respuesta</h2><a href="{% url 'chats' %}">Ver todos</a></div>
+    {% for c in recientes %}
+      <a class="fila" href="{% url 'chat' c.pk %}">
+        <div class="av">{{ c.iniciales }}</div>
+        <div class="t"><b>{{ c }}</b><span>{{ c.ultimo_texto }}</span></div>
+        <div class="m">hace {{ c.ultima_fecha|timesince }}<br>{% if c.ventana_abierta %}<span class="chip ok">Ventana abierta</span>{% else %}<span class="chip warn">Solo plantilla</span>{% endif %}</div>
+      </a>
+    {% empty %}
+      <p class="vacio">No hay nadie esperando. Todo al día.</p>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

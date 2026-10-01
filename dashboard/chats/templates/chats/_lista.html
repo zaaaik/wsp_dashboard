@@ -1,9 +1,20 @@
-{% for c in contactos %}
-  <a class="fila" href="{% url 'chat' c.pk %}">
-    <strong>{{ c }}</strong> <small>{{ c.telefono }} · {{ c.ultima_fecha|date:"d/m H:i" }}</small><br>
-    <small>{{ c.ultimo_texto|truncatechars:70 }}</small>
-    {% if not c.ventana_abierta %}<small> · ventana 24 h cerrada</small>{% endif %}
+<div class="tabs" role="tablist" aria-label="Filtrar chats">
+  <a role="tab" class="{% if filtro == 'sin_responder' %}on{% endif %}" href="?f=sin_responder">Sin responder ({{ cuentas.sin_responder }})</a>
+  <a role="tab" class="{% if filtro == 'abiertas' %}on{% endif %}" href="?f=abiertas">Ventana abierta ({{ cuentas.abiertas }})</a>
+  <a role="tab" class="{% if filtro == 'todos' %}on{% endif %}" href="?f=todos">Todos ({{ cuentas.todos }})</a>
+</div>
+{% for c in conversaciones %}
+  <a class="conv {% if c.pk == seleccionado %}sel{% endif %}" href="{% url 'chat' c.pk %}?f={{ filtro }}">
+    <div class="av">{{ c.iniciales }}</div>
+    <div class="t">
+      <div class="r"><b>{{ c }}</b><small>{{ c.ultima_fecha|date:"H:i" }}</small></div>
+      <span>{{ c.ultimo_texto|truncatechars:60 }}</span>
+      <div>
+        {% if c.ultima_dir == 'in' %}<span class="chip">Sin responder</span>{% endif %}
+        {% if not c.ventana_abierta %}<span class="chip warn">Solo plantilla</span>{% endif %}
+      </div>
+    </div>
   </a>
 {% empty %}
-  <p>Aún no hay conversaciones.</p>
+  <p class="vacio">No hay conversaciones en esta vista.</p>
 {% endfor %}
