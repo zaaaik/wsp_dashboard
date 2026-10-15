@@ -15,6 +15,8 @@
   .conv .r { display: flex; justify-content: space-between; gap: 8px; }
   .conv .r small { color: var(--mut); }
   .conv .t > span { color: var(--mut); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .conv .chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+  .chip.sin { background: #fdeaea; color: #a32d2d; }
   .vacio { color: var(--mut); padding: 16px; margin: 0; }
 
   .cab { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
@@ -41,7 +43,8 @@
   .ficha dl { margin: 0; display: grid; gap: 10px; }
   .ficha dt { color: var(--mut); font-size: 12px; }
   .ficha dd { margin: 0; font-weight: 500; }
-  .ficha textarea { width: 100%; min-height: 110px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; resize: vertical; margin: 8px 0; }
+  .ficha textarea { width: 100%; min-height: 110px; padding: 10px; border: 1px solid #efe3a8; background: #fffbe6; border-radius: 12px; resize: vertical; margin: 8px 0; }
+  .ficha textarea:focus { outline: 2px solid #efe3a8; }
   .guardado { color: var(--ok); font-size: 12px; margin-left: 8px; }
 
   @media (max-width: 1100px) { .panel { grid-template-columns: 300px minmax(0, 1fr); } .ficha { display: none; } }
@@ -69,6 +72,7 @@
         <div class="cab">
           <div class="av">{{ contacto.iniciales }}</div>
           <div class="t"><b>{{ contacto }}</b><small>{{ contacto.telefono }}</small></div>
+          {% include 'chats/_ventana.html' %}
           <a class="btn sec" href="{% url 'enviar_plantilla' %}?telefono={{ contacto.telefono|urlencode }}">Enviar plantilla</a>
         </div>
         <div class="conversacion">

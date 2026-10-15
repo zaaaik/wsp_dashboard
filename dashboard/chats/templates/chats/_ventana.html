@@ -1,0 +1,1 @@
+<span id="ventana-cab" {% if oob %}hx-swap-oob="true"{% endif %} class="chip {% if contacto.ventana_abierta %}ok{% else %}warn{% endif %}">{% if contacto.ventana_abierta %}Ventana abierta: {{ contacto.ventana_cierra|timeuntil }}{% else %}Ventana cerrada{% endif %}</span>

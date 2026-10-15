@@ -129,7 +129,7 @@ def lista_parcial(request):
 @staff_member_required
 def chat_mensajes(request, pk):
     contacto = get_object_or_404(Contacto, pk=pk)
-    return render(request, 'chats/_mensajes.html', {'contacto': contacto, 'mensajes': contacto.mensajes.all()})
+    return render(request, 'chats/_mensajes.html', {'contacto': contacto, 'mensajes': contacto.mensajes.all(), 'oob': True})
 
 
 @staff_member_required
@@ -145,7 +145,7 @@ def chat_enviar(request, pk):
             enviar_texto(contacto, texto)
         except TwilioRestException as e:
             error = f'No se pudo enviar el mensaje: {e.msg}'
-    return render(request, 'chats/_mensajes.html', {'contacto': contacto, 'mensajes': contacto.mensajes.all(), 'error': error})
+    return render(request, 'chats/_mensajes.html', {'contacto': contacto, 'mensajes': contacto.mensajes.all(), 'error': error, 'oob': True})
 
 
 @staff_member_required
