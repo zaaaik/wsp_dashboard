@@ -1,10 +1,16 @@
+from functools import partial
+
 from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.admin.views.decorators import staff_member_required as _staff_member_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.views import LoginView
+from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseForbidden
 from datetime import timedelta
 
-from django.db.models import OuterRef, Subquery
-from django.shortcuts import get_object_or_404, render
+from django.db.models import OuterRef, Q, Subquery
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -13,6 +19,32 @@ from twilio.request_validator import RequestValidator
 
 from .models import VENTANA, Contacto, Mensaje
 from .twilio_client import enviar_plantilla_pedido, enviar_texto
+
+# Las páginas del panel mandan a la pantalla de acceso propia, no a la de Django admin.
+staff_member_required = partial(_staff_member_required, login_url='login')
+
+
+class FormularioAcceso(AuthenticationForm):
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)
+        if not user.is_staff:
+            raise ValidationError('Este usuario no tiene acceso al panel.', code='sin_acceso')
+
+
+SESION_SIN_RECORDAR = 12 * 3600  # una jornada
+
+
+class AccesoView(LoginView):
+    template_name = 'chats/login.html'
+    authentication_form = FormularioAcceso
+
+    def form_valid(self, form):
+        respuesta = super().form_valid(form)
+        if not self.request.POST.get('recordar'):
+            # Vencimiento fijo en el servidor. Una cookie "de navegador" no basta: Chrome con
+            # "Continuar donde lo dejaste" la restaura y la sesión seguiría válida.
+            self.request.session.set_expiry(SESION_SIN_RECORDAR)
+        return respuesta
 
 
 @csrf_exempt
@@ -74,22 +106,27 @@ def _conversaciones():
     )
 
 
-FILTROS = ('sin_responder', 'abiertas', 'todos')
+FILTROS = ('sin_responder', 'abiertas', 'todos', 'humano')
 
 
-def _contexto_lista(filtro, seleccionado=None):
-    filtro = filtro if filtro in FILTROS else 'sin_responder'
+def _contexto_lista(filtro, seleccionado=None, q=''):
+    filtro = filtro if filtro in FILTROS else 'todos'
+    q = (q or '').strip()
     ahora = timezone.now()
     todas = _conversaciones()
     por_filtro = {
         'sin_responder': todas.filter(ultima_dir=Mensaje.Direccion.ENTRANTE),
         'abiertas': todas.filter(ultimo_mensaje_entrante__gte=ahora - VENTANA),
         'todos': todas,
+        'humano': todas.filter(necesita_humano=True),
     }
+    # La búsqueda ignora el filtro activo y recorre todos los chats; sin nombre, el contacto se muestra por su teléfono.
+    conversaciones = todas.filter(Q(nombre__icontains=q) | Q(telefono__icontains=q)) if q else por_filtro[filtro]
     return {
         'filtro': filtro,
         'seleccionado': seleccionado,
-        'conversaciones': por_filtro[filtro],
+        'q': q,
+        'conversaciones': conversaciones,
         'cuentas': {k: v.count() for k, v in por_filtro.items()},
     }
 
@@ -115,7 +152,7 @@ def inicio(request):
 @staff_member_required
 def chats(request, pk=None):
     contacto = get_object_or_404(Contacto, pk=pk) if pk else None
-    contexto = _contexto_lista(request.GET.get('f'), pk)
+    contexto = _contexto_lista(request.GET.get('f'), pk, request.GET.get('q'))
     contexto.update({'contacto': contacto, 'mensajes': contacto.mensajes.all() if contacto else []})
     return render(request, 'chats/chats.html', contexto)
 
@@ -123,7 +160,7 @@ def chats(request, pk=None):
 @staff_member_required
 def lista_parcial(request):
     sel = request.GET.get('sel')
-    return render(request, 'chats/_lista.html', _contexto_lista(request.GET.get('f'), int(sel) if sel and sel.isdigit() else None))
+    return render(request, 'chats/_lista.html', _contexto_lista(request.GET.get('f'), int(sel) if sel and sel.isdigit() else None, request.GET.get('q')))
 
 
 @staff_member_required
@@ -146,6 +183,18 @@ def chat_enviar(request, pk):
         except TwilioRestException as e:
             error = f'No se pudo enviar el mensaje: {e.msg}'
     return render(request, 'chats/_mensajes.html', {'contacto': contacto, 'mensajes': contacto.mensajes.all(), 'error': error, 'oob': True})
+
+
+@staff_member_required
+@require_POST
+def chat_humano(request, pk):
+    """Marca el chat como "Requiere atención" o lo da por atendido."""
+    contacto = get_object_or_404(Contacto, pk=pk)
+    contacto.necesita_humano = not contacto.necesita_humano
+    contacto.save(update_fields=['necesita_humano'])
+    filtro = request.POST.get('f')
+    destino = reverse('chat', args=[pk])
+    return redirect(f'{destino}?f={filtro}' if filtro in FILTROS else destino)
 
 
 @staff_member_required

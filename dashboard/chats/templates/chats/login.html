@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #00a884; display: flex; align-items: center; justify-content: center; padding: 16px; position: relative; overflow: hidden;
+           font-family: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif; color: #111b21; }
+    .d { position: absolute; border-radius: 50%; background: #fff; opacity: .08; }
+    .tarjeta { position: relative; width: 100%; max-width: 360px; background: #fff; border-radius: 16px; padding: 30px 28px; }
+    .marca { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .logo { width: 42px; height: 42px; border-radius: 12px; background: #00a884; color: #fff; font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+    .marca b { display: block; font-size: 18px; font-weight: 600; }
+    .marca small { color: #667781; font-size: 13px; }
+    label { display: block; font-size: 13px; color: #667781; margin: 0 0 5px; }
+    input[type=text], input[type=password] { width: 100%; border: 1px solid #cfd6d9; border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 15px; margin-bottom: 14px; color: #111b21; background: #fff; }
+    input[type=text]:focus, input[type=password]:focus { outline: 2px solid #d9fdd3; border-color: #00a884; }
+    .campo { position: relative; }
+    .campo input[type=password], .campo input[type=text] { padding-right: 42px; }
+    .ojo { position: absolute; right: 4px; top: 2px; width: 36px; height: 36px; border: 0; background: none; color: #667781; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .ojo:hover { color: #111b21; background: #f0f2f5; }
+    .ojo svg[hidden] { display: none; }
+    .fila { display: flex; align-items: center; font-size: 13px; color: #667781; margin: -2px 0 16px; }
+    .fila label { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; cursor: pointer; }
+    .entrar { width: 100%; background: #111b21; color: #fff; border: 0; border-radius: 10px; padding: 11px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .entrar:hover { background: #2a3942; }
+    .error { background: #fdeaea; color: #a32d2d; border-radius: 10px; padding: 8px 12px; font-size: 13px; margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <div class="d" style="width:340px;height:340px;left:-110px;top:-120px"></div>
+  <div class="d" style="width:260px;height:260px;right:-70px;bottom:-90px"></div>
+  <div class="d" style="width:110px;height:110px;right:14%;top:8%"></div>
+
+  <form class="tarjeta" method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <div class="marca"><div class="logo">P</div><div><b>Panel</b><small>Atención al cliente</small></div></div>
+
+    {% for e in form.non_field_errors %}<div class="error">{{ e }}</div>{% endfor %}
+
+    <label for="id_username">Usuario</label>
+    <input type="text" name="username" id="id_username" value="{{ form.username.value|default:'' }}" autocomplete="username" autofocus required>
+
+    <label for="id_password">Contraseña</label>
+    <div class="campo">
+      <input type="password" name="password" id="id_password" autocomplete="current-password" required>
+      <button type="button" id="ver" class="ojo" aria-controls="id_password" aria-label="Mostrar contraseña" title="Mostrar contraseña">
+        <svg class="abierto" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg class="tachado" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.9 17.9A10.4 10.4 0 0 1 12 19c-6.4 0-10-7-10-7a17.8 17.8 0 0 1 4.1-5.1M9.9 5.2A9.8 9.8 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-2.2 3.2"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/><path d="M2 2l20 20"/></svg>
+      </button>
+    </div>
+
+    <div class="fila">
+      <label><input type="checkbox" name="recordar" value="1" checked> Recordar sesión</label>
+    </div>
+    <button class="entrar" type="submit">Iniciar sesión</button>
+  </form>
+
+  <script>
+    const campo = document.getElementById('id_password'), ver = document.getElementById('ver');
+    ver.addEventListener('click', () => {
+      const oculto = campo.type === 'password';
+      campo.type = oculto ? 'text' : 'password';
+      const texto = oculto ? 'Ocultar contraseña' : 'Mostrar contraseña';
+      ver.setAttribute('aria-label', texto);
+      ver.title = texto;
+      // los <svg> no tienen la propiedad .hidden, solo el atributo
+      ver.querySelector('.abierto').toggleAttribute('hidden', oculto);
+      ver.querySelector('.tachado').toggleAttribute('hidden', !oculto);
+    });
+  </script>
+</body>
+</html>

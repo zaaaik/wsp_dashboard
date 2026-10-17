@@ -11,6 +11,7 @@ class Contacto(models.Model):
     nombre = models.CharField(max_length=120, blank=True)
     ultimo_mensaje_entrante = models.DateTimeField(null=True, blank=True)  # base de la ventana de 24 h
     notas = models.TextField(blank=True)  # notas internas, el cliente no las ve
+    necesita_humano = models.BooleanField(default=False)  # requiere que una persona atienda, p. ej. confirmar un pedido
     creado = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -24,6 +25,11 @@ class Contacto(models.Model):
         return self.telefono[-2:]
 
     @property
+    def color_avatar(self):
+        """Clase CSS (c0 a c7) estable por cliente; usa el id para que los chats contiguos no repitan color."""
+        return f'c{(self.pk or 0) % 8}'
+
+    @property
     def ventana_cierra(self):
         return self.ultimo_mensaje_entrante + VENTANA if self.ultimo_mensaje_entrante else None
 
@@ -32,6 +38,11 @@ class Contacto(models.Model):
         if not self.ultimo_mensaje_entrante:
             return timedelta(0)
         return max(self.ultimo_mensaje_entrante + VENTANA - timezone.now(), timedelta(0))
+
+    @property
+    def ventana_texto(self):
+        segundos = int(self.ventana_restante.total_seconds())
+        return f'{segundos // 3600} h {segundos % 3600 // 60:02d} min {segundos % 60:02d} s'
 
     @property
     def ventana_abierta(self):
@@ -54,3 +65,13 @@ class Mensaje(models.Model):
 
     def __str__(self):
         return f'{self.get_direccion_display()} {self.contacto}: {self.texto[:40]}'
+
+
+class Bloqueo(models.Model):
+    """Historial de bloqueos del acceso, por usuario, para que cada bloqueo dure el doble que el anterior."""
+    username = models.CharField(max_length=150, unique=True)
+    nivel = models.PositiveSmallIntegerField(default=0)  # nivel 1 = 5 min, 2 = 10 min, 3 = 20 min…
+    bloqueado_hasta = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.username} (nivel {self.nivel})'

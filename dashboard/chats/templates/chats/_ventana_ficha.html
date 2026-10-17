@@ -1,0 +1,1 @@
+<span id="ventana-ficha" {% if oob %}hx-swap-oob="true"{% endif %}>{% if contacto.ventana_abierta %}<span class="chip ok">Abierta</span> <span class="resta"><span class="cuenta" data-cierra="{{ contacto.ventana_cierra|date:'c' }}">{{ contacto.ventana_texto }}</span> restantes</span>{% else %}<span class="chip warn">Cerrada</span>{% endif %}</span>

@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import Contacto, Mensaje
+from .models import Bloqueo, Contacto, Mensaje
+
+
+@admin.register(Bloqueo)
+class BloqueoAdmin(admin.ModelAdmin):
+    list_display = ('username', 'nivel', 'bloqueado_hasta')  # borrar la fila reinicia los bloqueos del usuario
 
 
 @admin.register(Contacto)

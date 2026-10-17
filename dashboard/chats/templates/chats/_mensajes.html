@@ -1,4 +1,4 @@
-{% if oob %}{% include 'chats/_ventana.html' %}{% endif %}
+{% if oob %}{% include 'chats/_ventana.html' %}{% include 'chats/_ventana_ficha.html' %}{% endif %}
 {% if not contacto.ventana_abierta %}
   <div class="aviso">Ventana de 24 h cerrada. Solo se admite el envío de plantillas: <a href="{% url 'enviar_plantilla' %}?telefono={{ contacto.telefono|urlencode }}">Enviar plantilla</a>.</div>
 {% endif %}

@@ -1,20 +1,31 @@
-<div class="tabs" role="tablist" aria-label="Filtrar chats">
-  <a role="tab" class="{% if filtro == 'sin_responder' %}on{% endif %}" href="?f=sin_responder">Sin responder ({{ cuentas.sin_responder }})</a>
-  <a role="tab" class="{% if filtro == 'abiertas' %}on{% endif %}" href="?f=abiertas">Ventana abierta ({{ cuentas.abiertas }})</a>
-  <a role="tab" class="{% if filtro == 'todos' %}on{% endif %}" href="?f=todos">Todos ({{ cuentas.todos }})</a>
+<div class="cab-lista">
+  <div class="buscar">
+    <input id="buscar" type="search" name="q" value="{{ q }}" placeholder="Buscar cliente" autocomplete="off" aria-label="Buscar cliente por nombre"
+           hx-preserve
+           hx-get="{% url 'lista_parcial' %}?f={{ filtro }}&sel={{ seleccionado|default:'' }}"
+           hx-trigger="input changed delay:250ms, search"
+           hx-target="#bandeja" hx-swap="innerHTML">
+  </div>
+  <div class="tabs" role="tablist" aria-label="Filtrar chats">
+    <a role="tab" class="{% if filtro == 'todos' and not q %}on{% endif %}" href="?f=todos">Todos <b>{{ cuentas.todos }}</b></a>
+    <a role="tab" class="{% if filtro == 'sin_responder' and not q %}on{% endif %}" href="?f=sin_responder">Sin responder <b>{{ cuentas.sin_responder }}</b></a>
+    <a role="tab" class="{% if filtro == 'abiertas' and not q %}on{% endif %}" href="?f=abiertas">Abiertas <b>{{ cuentas.abiertas }}</b></a>
+    <a role="tab" class="humano{% if cuentas.humano %} alerta{% endif %}{% if filtro == 'humano' and not q %} on{% endif %}" href="?f=humano">Requiere atención <b>{{ cuentas.humano }}</b></a>
+  </div>
 </div>
 {% for c in conversaciones %}
-  <a class="conv {% if c.pk == seleccionado %}sel{% endif %}" href="{% url 'chat' c.pk %}?f={{ filtro }}">
-    <div class="av">{{ c.iniciales }}</div>
+  <a class="conv {% if c.pk == seleccionado %}sel{% endif %}" href="{% url 'chat' c.pk %}?f={{ filtro }}&q={{ q|urlencode }}">
+    <div class="av {{ c.color_avatar }}">{{ c.iniciales }}</div>
     <div class="t">
       <div class="r"><b>{{ c }}</b><small>{{ c.ultima_fecha|date:"H:i" }}</small></div>
       <span>{{ c.ultimo_texto|truncatechars:60 }}</span>
       <div class="chips">
+        {% if c.necesita_humano %}<span class="chip hum">Requiere atención</span>{% endif %}
         {% if c.ultima_dir == 'in' %}<span class="chip sin">Sin responder</span>{% else %}<span class="chip ok">Respondido</span>{% endif %}
         {% if not c.ventana_abierta %}<span class="chip warn">Solo plantilla</span>{% endif %}
       </div>
     </div>
   </a>
 {% empty %}
-  <p class="vacio">Sin conversaciones.</p>
+  <p class="vacio">{% if q %}Ningún cliente coincide con «{{ q }}».{% else %}Sin conversaciones.{% endif %}</p>
 {% endfor %}

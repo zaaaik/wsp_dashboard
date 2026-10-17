@@ -39,6 +39,7 @@ CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').sp
 
 INSTALLED_APPS = [
     'chats',
+    'axes',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',  # siempre al final
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -132,6 +134,35 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# Acceso
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'inicio'
+LOGOUT_REDIRECT_URL = 'login'
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',  # debe ir primero
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Límite de intentos: tras 5 fallos seguidos con un usuario, ese usuario se bloquea 5 minutos.
+# Cada nuevo bloqueo dura el doble que el anterior (10, 20, 40 min…); ver chats/bloqueos.py.
+# Se bloquea por usuario y no por IP porque detrás del proxy de Railway la IP del cliente no es fiable.
+# Un administrador puede quitar un bloqueo desde /admin/ (Axes).
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 'chats.bloqueos.cooloff'
+AXES_LOCKOUT_PARAMETERS = ['username']
+AXES_RESET_ON_SUCCESS = True
+AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = False  # intentar durante el bloqueo no lo alarga
+AXES_LOCKOUT_CALLABLE = 'chats.bloqueos.respuesta_bloqueo'
+SILENCED_SYSTEM_CHECKS = ['axes.W006']  # aviso por no usar la IP, decisión explicada arriba
+
+# En producción (HTTPS) las cookies de sesión y de CSRF solo viajan cifradas.
+# Railway termina el HTTPS y reenvía a Django por HTTP, así que se confía en X-Forwarded-Proto.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Twilio
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')

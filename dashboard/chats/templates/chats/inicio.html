@@ -3,7 +3,7 @@
 <style>
   .metricas { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 20px; }
   .metrica small { color: var(--mut); display: block; }
-  .metrica .n { font-family: Fraunces, serif; font-size: 40px; font-weight: 600; line-height: 1.2; margin: 6px 0 2px; }
+  .metrica .n { font-size: 40px; font-weight: 600; line-height: 1.2; margin: 6px 0 2px; }
   .metrica span { color: var(--mut); font-size: 13px; }
   .cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .fila { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
@@ -33,7 +33,7 @@
     <div class="cab"><h2>Pendientes de respuesta</h2><a href="{% url 'chats' %}">Ver todos</a></div>
     {% for c in recientes %}
       <a class="fila" href="{% url 'chat' c.pk %}">
-        <div class="av">{{ c.iniciales }}</div>
+        <div class="av {{ c.color_avatar }}">{{ c.iniciales }}</div>
         <div class="t"><b>{{ c }}</b><span>{{ c.ultimo_texto }}</span></div>
         <div class="m">hace {{ c.ultima_fecha|timesince }}<br>{% if c.ventana_abierta %}<span class="chip ok">Ventana abierta</span>{% else %}<span class="chip warn">Solo plantilla</span>{% endif %}</div>
       </a>
